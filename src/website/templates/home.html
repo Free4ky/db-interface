@@ -31,7 +31,6 @@
                 ],
             });
             $('#data tbody').on('click', 'tr', function () {
-                alert(table.row(this).data()['Day']);
                 fetch("/get_row", {
                     method: "POST",
                     body: JSON.stringify(table.row(this).data()),

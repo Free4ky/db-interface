@@ -1,0 +1,31 @@
+{% extends "base.html" %} {% block title %}Referral{% endblock %}
+
+{% block content %}
+    <table id="data" class="table table-striped">
+        <thead>
+        <tr>
+            {% for header in headings %}
+                <th>{{ header }}</th>
+            {% endfor %}
+        </tr>
+        </thead>
+    </table>
+{% endblock %}
+{% block scripts %}
+    <script>
+        $(document).ready(function () {
+            var table = $('#data').DataTable({
+                ajax: '/api/ref-query',
+                columns: [
+                    {data: 'Id', visible: false},
+                    {data: 'Referral name'},
+                    {data: 'Start time'},
+                    {data: 'End time'},
+                    {data: 'Name'},
+                    {data: 'Surname'},
+                    {data: 'Patronymic'}
+                ],
+            });
+        });
+    </script>
+{% endblock %}

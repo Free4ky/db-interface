@@ -4,6 +4,7 @@ from flask_login import login_required, current_user
 from . import db, db_tables
 from datetime import date, time
 import json
+from .config import registration_headings, schedule_headings, referral_headings, medical_card_headings
 
 views = Blueprint('views', __name__)
 
@@ -11,17 +12,7 @@ views = Blueprint('views', __name__)
 @views.route('/')
 @login_required
 def home():
-    headings = ('Id',
-                'Name',
-                'Surname',
-                'Patronymic',
-                'Specialization',
-                'Day',
-                'Date',
-                'Time',
-                'Cabinet'
-                )
-    return render_template('home.html', user=current_user, headings=headings)
+    return render_template('home.html', user=current_user, headings=schedule_headings)
 
 
 def to_dict(query_result, headings):
@@ -35,16 +26,6 @@ def to_dict(query_result, headings):
 
 @views.route('/api/data')
 def data():
-    headings = ('Id',
-                'Name',
-                'Surname',
-                'Patronymic',
-                'Specialization',
-                'Day',
-                'Date',
-                'Time',
-                'Cabinet'
-                )
     query_result = db.session.query(
         db_tables['doctors'].id_doctor,
         db_tables['doctors'].name,
@@ -59,7 +40,7 @@ def data():
         join(db_tables['doctors']). \
         join(db_tables['specializations']). \
         join(db_tables['days']).all()
-    return to_dict(query_result, headings)
+    return to_dict(query_result, schedule_headings)
 
 
 data_dict = {}
@@ -86,14 +67,15 @@ def confirm():
 @login_required
 def add_registration():
     data = json.loads(request.data)
-    #res = db.session.query(db_tables['days'].id_day).where(data['Day'] == db_tables['days'].day).first()
-    #print(f'QUEEERY {res}')
+    # res = db.session.query(db_tables['days'].id_day).where(data['Day'] == db_tables['days'].day).first()
+    # print(f'QUEEERY {res}')
     if data.get('answer'):
         new_registration = db_tables['registrations'](
             reg_date=data_dict['Date'],
             reg_time=data_dict['Time'],
             id_doctor=data_dict['Id'],
-            id_day=db.session.query(db_tables['days'].id_day).where(data_dict['Day'] == db_tables['days'].day).first()[0],
+            id_day=db.session.query(db_tables['days'].id_day).where(data_dict['Day'] == db_tables['days'].day).first()[
+                0],
             id_patient=current_user.get_id(),
             disease_descr='',
             cabinet=data_dict['Cabinet'],
@@ -108,15 +90,6 @@ def add_registration():
 
 @views.route('/api/reg-query')
 def reg_query():
-    headings = (
-        'Id',
-        'Name',
-        'Surname',
-        'Patronymic',
-        'Specialization',
-        'Date',
-        'Time'
-    )
     query_result = db.session.query(
         db_tables['registrations'].id_registration,
         db_tables['doctors'].name,
@@ -128,22 +101,13 @@ def reg_query():
     ).select_from(db_tables['registrations']). \
         join(db_tables['doctors']). \
         join(db_tables['specializations']).where(current_user.get_id() == db_tables['registrations'].id_patient).all()
-    return to_dict(query_result, headings)
+    return to_dict(query_result, registration_headings)
 
 
 @views.route('/registrations')
 @login_required
 def registrations():
-    headings = (
-        'Id',
-        'Name',
-        'Surname',
-        'Patronymic',
-        'Specialization',
-        'Date',
-        'Time'
-    )
-    return render_template('registrations.html', user=current_user, headings=headings)
+    return render_template('registrations.html', user=current_user, headings=registration_headings)
 
 
 @views.route('/delete-registration', methods=['POST'])
@@ -153,3 +117,42 @@ def delete_registration():
         db_tables['registrations'].id_registration == data['Id']).first()
     db.session.delete(obj_to_delete)
     db.session.commit()
+
+
+@login_required
+@views.route('/referral')
+def referral():
+    return render_template('referral.html', user=current_user, headings=referral_headings)
+
+
+@views.route('/api/ref-query')
+def referral_query():
+    query_result = db.session.query(
+        db_tables['referral'].id_referral,
+        db_tables['referral'].name,
+        db_tables['referral'].start_time,
+        db_tables['referral'].end_time,
+        db_tables['doctors'].name,
+        db_tables['doctors'].surname,
+        db_tables['doctors'].patronymic,
+    ).select_from(db_tables['referral']).join(db_tables['doctors']).where(
+        current_user.get_id() == db_tables['referral'].id_patient).all()
+    return to_dict(query_result, referral_headings)
+
+
+@login_required
+@views.route('/medical-card')
+def medical_card():
+    return render_template('medical_card.html', user=current_user, headings=medical_card_headings)
+
+
+@views.route('/api/med-query')
+def medical_card_query():
+    query_result = db.session.query(
+        db_tables['referral'].id_referral,
+        db_tables['referral'].name,
+        db_tables['results'].result_date,
+        db_tables['results'].result_info
+    ).select_from(db_tables['results']).join(db_tables['referral']).where(
+        current_user.get_id() == db_tables['referral'].id_patient).all()
+    return to_dict(query_result, medical_card_headings)

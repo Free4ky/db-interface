@@ -1,0 +1,27 @@
+{% extends "base.html" %} {% block title %}Medical card{% endblock %}
+{% block content %}
+    <table id="data" class="table table-striped">
+        <thead>
+        <tr>
+            {% for header in headings %}
+                <th>{{ header }}</th>
+            {% endfor %}
+        </tr>
+        </thead>
+    </table>
+{% endblock %}
+{% block scripts %}
+    <script>
+        $(document).ready(function () {
+            var table = $('#data').DataTable({
+                ajax: '/api/med-query',
+                columns: [
+                    {data: 'Id', visible: false},
+                    {data: 'Name'},
+                    {data: 'Date'},
+                    {data: 'Description'},
+                ],
+            });
+        });
+    </script>
+{% endblock %}
