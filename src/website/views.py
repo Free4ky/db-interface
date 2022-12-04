@@ -86,15 +86,17 @@ def confirm():
 @login_required
 def add_registration():
     data = json.loads(request.data)
-    print(data_dict)
-    print(data)
+    #res = db.session.query(db_tables['days'].id_day).where(data['Day'] == db_tables['days'].day).first()
+    #print(f'QUEEERY {res}')
     if data.get('answer'):
         new_registration = db_tables['registrations'](
             reg_date=data_dict['Date'],
             reg_time=data_dict['Time'],
             id_doctor=data_dict['Id'],
+            id_day=db.session.query(db_tables['days'].id_day).where(data_dict['Day'] == db_tables['days'].day).first()[0],
             id_patient=current_user.get_id(),
             disease_descr='',
+            cabinet=data_dict['Cabinet'],
         )
         db.session.add(new_registration)
         db.session.commit()
@@ -142,6 +144,7 @@ def registrations():
         'Time'
     )
     return render_template('registrations.html', user=current_user, headings=headings)
+
 
 @views.route('/delete-registration', methods=['POST'])
 def delete_registration():
