@@ -1,0 +1,44 @@
+{% extends "base.html" %} {% block title %}Confirmation{% endblock %}
+
+{% block content %}
+    <table id="data" class="table table-striped">
+        <tr>
+            {% for header in headings %}
+                <th>{{ header }}</th>
+            {% endfor %}
+            <th>Registration</th>
+        </tr>
+        <tr>
+            {% for cell in data %}
+                <td> {{ cell }}</td>
+            {% endfor %}
+            <td>
+                <button class="btn btn-success">&#10003;</button>
+                <button class="btn btn-danger">&times;</button>
+            </td>
+        </tr>
+    </table>
+{% endblock %}
+{% block scripts %}
+
+    <script>
+        $(document).ready(function () {
+            $('#data').on('click', 'button.btn-success', function () {
+                fetch("/add-registration", {
+                    method: "POST",
+                    body: JSON.stringify({answer: true}),
+                }).then((_res) => {
+                    window.location.href = '/'
+                });
+            });
+            $('#data').on('click', 'button.btn-danger', function () {
+                fetch("/add-registration", {
+                    method: "POST",
+                    body: JSON.stringify({answer: false}),
+                }).then((_res) => {
+                    window.location.href = '/'
+                });
+            });
+        });
+    </script>
+{% endblock %}

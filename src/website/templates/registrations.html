@@ -1,4 +1,4 @@
-{% extends "base.html" %} {% block title %}Home page{% endblock %}
+{% extends "base.html" %} {% block title %}Registrations{% endblock %}
 
 {% block content %}
     <table id="data" class="table table-striped">
@@ -7,36 +7,34 @@
             {% for header in headings %}
                 <th>{{ header }}</th>
             {% endfor %}
+            <th>Cancel</th>
         </tr>
         </thead>
     </table>
-
 {% endblock %}
-
 {% block scripts %}
     <script>
         $(document).ready(function () {
             var table = $('#data').DataTable({
-                ajax: '/api/data',
+                ajax: '/api/reg-query',
                 columns: [
-                    {data: 'Id', visible: false},
+                    {data: 'Id', visible:false},
                     {data: 'Name'},
                     {data: 'Surname'},
                     {data: 'Patronymic'},
                     {data: 'Specialization'},
-                    {data: 'Day'},
                     {data: 'Date'},
                     {data: 'Time'},
-                    {data: 'Cabinet'},
+                    {defaultContent: '<button class="btn btn-danger">&times;</button>', orderable:false, searchable:false, },
                 ],
             });
-            $('#data tbody').on('click', 'tr', function () {
-                alert(table.row(this).data()['Day']);
-                fetch("/get_row", {
+            $('#data').on('click', 'button', function () {
+                var row_data = table.row($(this).parents('tr')).data();
+                fetch("/delete-registration", {
                     method: "POST",
-                    body: JSON.stringify(table.row(this).data()),
+                    body: JSON.stringify(row_data),
                 }).then((_res) => {
-                    window.location.href = '/confirm'
+                    window.location.href = '/registrations'
                 });
             });
         });

@@ -67,7 +67,7 @@ def sign_up():
             flash('Insurance policy error!', category='error')
         else:
             # add user
-            new_login = db_tables['login'](
+            new_login = Login(
                 email=email,
                 password=generate_password_hash(
                     password1,
@@ -84,7 +84,8 @@ def sign_up():
             db.session.commit()
             db.session.add(new_patient)
             db.session.commit()
-            login_user(user, remember=True)
+            # if user:
+            #     login_user(user, remember=True)
             flash('Account created!', category='success')
             return redirect(url_for('views.home'))
     return render_template('sign_up.html', user=current_user)
