@@ -17,7 +17,12 @@ views = Blueprint('views', __name__)
 @views.route('/')
 @login_required
 def home():
-    return render_template('home.html', user=current_user, headings=schedule_headings)
+    return render_template('home.html', user=current_user)
+
+@views.route('/schedule')
+@login_required
+def schedule():
+    return render_template('schedule.html', user=current_user, headings=schedule_headings)
 
 
 def to_dict(query_result, headings):
@@ -121,6 +126,7 @@ def delete_registration():
         db_tables['registrations'].id_registration == data['Id']).first()
     db.session.delete(obj_to_delete)
     db.session.commit()
+    return jsonify({})
 
 
 @login_required
@@ -291,4 +297,5 @@ def fetch_time():
     )
     db.session.add(new_registration)
     db.session.commit()
+    flash('Registration is completed!', category='success')
     return jsonify({})

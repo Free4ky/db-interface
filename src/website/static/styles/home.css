@@ -1,0 +1,18 @@
+.round {
+    display: flex;
+    align-items: center;
+    background-color: dodgerblue;
+    width: 90%;
+    height: 40vh;
+    margin: 0 auto;
+    border-radius: 10px;
+
+}
+
+.inner {
+    display: flex;
+    align-items: center;
+    color: white;
+    width: 50%;
+    margin: 0 auto;
+}
