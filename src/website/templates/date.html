@@ -1,0 +1,31 @@
+{% extends "base.html" %} {% block title %}Pick date{% endblock %}
+
+{% block content %}
+    <div id="datepicker" style="font-size:45px; width: 50%; margin: 0 auto;"></div>
+{% endblock %}
+{% block scripts %}
+    <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+
+
+    <script>
+        var array = {{available_dates | safe}}
+
+            $('#datepicker').datepicker({
+                beforeShowDay: function (date) {
+                    var string = jQuery.datepicker.formatDate('yy-mm-dd', date);
+                    return [array.indexOf(string) != -1]
+                },
+                onSelect: function (dateText, inst) {
+                    var dateAsString = dateText; //the first parameter of this function
+                    var dateAsObject = $(this).datepicker({dateFormat: 'yy-mm-dd'}).val(); //the getDate method
+                    fetch("/fetch-date", {
+                        method: "POST",
+                        body: JSON.stringify({date: dateAsObject}),
+                    }).then((_res) => {
+                        window.location.href = '/time-picker'
+                    });
+                }
+            });
+    </script>
+{% endblock %}

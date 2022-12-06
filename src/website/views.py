@@ -1,10 +1,15 @@
 # routes
+import json
+from datetime import date, time
+
 from flask import Blueprint, render_template, request, jsonify, flash
 from flask_login import login_required, current_user
+
 from . import db, db_tables
-from datetime import date, time
-import json
-from .config import registration_headings, schedule_headings, referral_headings, medical_card_headings
+from .config import registration_headings, schedule_headings, referral_headings, medical_card_headings, \
+    doctor_names_headings, reg_headings
+
+from datetime import datetime
 
 views = Blueprint('views', __name__)
 
@@ -50,7 +55,6 @@ data_dict = {}
 def get_row():
     global data_dict
     data_dict = json.loads(request.data)
-    print(data_dict)
     return jsonify({})
 
 
@@ -156,3 +160,135 @@ def medical_card_query():
     ).select_from(db_tables['results']).join(db_tables['referral']).where(
         current_user.get_id() == db_tables['referral'].id_patient).all()
     return to_dict(query_result, medical_card_headings)
+
+
+@login_required
+@views.route('/specializations')
+def specializations():
+    result_query = db.session.query(
+        db_tables['specializations'].specialization_name
+    ).select_from(db_tables['specializations']).all()
+    result_query = list(map(lambda x: x[0], result_query))
+    return render_template('specializations.html', user=current_user, specializations=result_query)
+
+
+specialization_name = None
+
+
+@views.route('/fetch-specialization', methods=['POST'])
+def fetch_specialization():
+    global specialization_name
+    data = json.loads(request.data)
+    print(data)
+    specialization_name = data.get('specialization_name')
+    return jsonify({})
+
+
+@login_required
+@views.route('/doctor-names', methods=['GET', 'POST'])
+def doctor_names():
+    query_result = db.session.query(
+        db_tables['doctors'].id_doctor,
+        db_tables['doctors'].name,
+        db_tables['doctors'].surname,
+        db_tables['doctors'].patronymic,
+        db_tables['specializations'].specialization_name,
+        db_tables['schedule'].cabinet
+    ).select_from(db_tables['doctors']). \
+        join(db_tables['specializations']). \
+        join(db_tables['schedule']). \
+        where(specialization_name == db_tables['specializations'].specialization_name).all()
+    query_result = list(set(query_result))
+    print([dict(zip(doctor_names_headings, x)) for x in query_result])
+    return render_template("doctor_names.html", user=current_user,
+                           doctors=[dict(zip(doctor_names_headings, x)) for x in query_result])
+
+
+doctor_id = None
+
+
+@login_required
+@views.route('/fetch-doctors', methods=['POST'])
+def fetch_doctors():
+    global doctor_id
+    data = json.loads(request.data)
+    doctor_id = data.get('id_doctor')
+    return jsonify({})
+
+
+@views.route('/date-picker')
+def date_picker():
+    query_result = db.session.query(
+        db_tables['schedule'].sch_date
+    ).where(db_tables['schedule'].id_doctor == doctor_id).all()
+    return render_template(
+        'date.html',
+        user=current_user,
+        available_dates=list(set(map(lambda x: str(x[0]), query_result)))
+    )
+
+
+current_date = None
+
+
+@login_required
+@views.route('/fetch-date', methods=['POST'])
+def fetch_date():
+    global current_date
+    data = json.loads(request.data)
+    current_date = data.get('date')
+    current_date = datetime.strptime(current_date, "%d/%m/%Y").strftime("%Y-%m-%d")
+    print(current_date)
+    return jsonify({})
+
+
+@login_required
+@views.route('/time-picker')
+def time_picker():
+    query_result = db.session.query(
+        db_tables['schedule'].start_time
+    ).where(
+        db_tables['schedule'].id_doctor == doctor_id and db_tables['schedule'].sch_date == current_date
+    ).all()
+    print(list(set(map(lambda x: str(x[0]), query_result))))
+    return render_template(
+        'time.html',
+        user=current_user,
+        available_time=list(set(map(lambda x: str(x[0]), query_result)))
+    )
+
+
+current_time = None
+
+
+@login_required
+@views.route('/fetch-time', methods=['POST'])
+def fetch_time():
+    global current_time
+    data = json.loads(request.data)
+    current_time = data.get('time')
+    query_result = db.session.query(
+        db_tables['schedule'].id_doctor,
+        db_tables['schedule'].id_day,
+        db_tables['schedule'].sch_date,
+        db_tables['schedule'].start_time,
+        db_tables['schedule'].cabinet,
+    ).where(
+        db_tables['schedule'].id_doctor == doctor_id and
+        db_tables['schedule'].sch_date == current_date and
+        db_tables['schedule'].start_time == current_time
+    ).first()
+    query_result = tuple(map(lambda x: str(x), query_result))
+    query_result = dict(zip(reg_headings, query_result))
+    new_registration = db_tables['registrations'](
+        reg_date=query_result['date'],
+        reg_time=query_result['time'],
+        id_doctor=query_result['id_doctor'],
+        id_day=query_result['id_day'],
+        id_patient=current_user.get_id(),
+        disease_descr='',
+        cabinet=query_result['cabinet']
+    )
+    db.session.add(new_registration)
+    db.session.commit()
+    return jsonify({})

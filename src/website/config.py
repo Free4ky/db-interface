@@ -55,3 +55,20 @@ medical_card_headings = (
     'Date',
     'Description'
 )
+
+doctor_names_headings = (
+    'Id',
+    'Name',
+    'Surname',
+    'Patronymic',
+    'Specialization',
+    'Cabinet',
+)
+
+reg_headings = (
+    'id_doctor',
+    'id_day',
+    'date',
+    'time',
+    'cabinet'
+)

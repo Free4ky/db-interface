@@ -1,0 +1,15 @@
+.time-table {
+    text-align: center;
+}
+
+ul {
+    margin: 0;
+    list-style: none;
+    display: inline-block;
+    text-align: left;
+}
+
+li {
+    display: inline-block;
+    text-align: left;
+}

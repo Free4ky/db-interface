@@ -1,0 +1,21 @@
+{% extends "base.html" %} {% block title %}Specializations{% endblock %}
+{% block content %}
+    <div class="list-group" id="specs">
+        {% for spec in specializations %}
+            <button class="list-group-item list-group-item-action">{{ spec }}</button>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        $('#specs').on('click', 'button', function () {
+            fetch("/fetch-specialization", {
+                method: "POST",
+                body: JSON.stringify({specialization_name: this.innerText}),
+            }).then((_res) => {
+                window.location.href = '/doctor-names'
+            });
+        });
+    </script>
+{% endblock %}
