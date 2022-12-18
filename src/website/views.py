@@ -1,14 +1,13 @@
 # routes
 import json
-from datetime import date, time
-
+from datetime import date, time, datetime
+from sqlalchemy import and_
 from flask import Blueprint, render_template, request, jsonify, flash
 from flask_login import current_user
 from . import db, db_tables
 from .config import registration_headings, schedule_headings, referral_headings, medical_card_headings, \
     doctor_names_headings, reg_headings, patients_registration_headings
 
-from datetime import datetime
 from src.utils import login_required
 from . import app, ROLES, Login
 from flask import session
@@ -83,8 +82,7 @@ def add_registration():
             reg_time=session['data_dict']['Time'],
             id_doctor=session['data_dict']['Id'],
             id_day=db.session.query(db_tables['days'].id_day).where(
-                session['data_dict']['Day'] == db_tables['days'].day).first()[
-                0],
+                session['data_dict']['Day'] == db_tables['days'].day).first()[0],
             id_patient=current_user.get_id(),
             disease_descr='',
             cabinet=session['data_dict']['Cabinet'],
@@ -201,7 +199,8 @@ def doctor_names():
         join(db_tables['schedule']). \
         where(session['specialization_name'] == db_tables['specializations'].specialization_name).all()
     query_result = list(set(query_result))
-    print([dict(zip(doctor_names_headings, x)) for x in query_result])
+    print(query_result)
+    print('IM HERE', [dict(zip(doctor_names_headings, x)) for x in query_result])
     return render_template("doctor_names.html", user=current_user,
                            doctors=[dict(zip(doctor_names_headings, x)) for x in query_result])
 
@@ -231,19 +230,24 @@ def date_picker():
 def fetch_date():
     data = json.loads(request.data)
     current_date = data.get('date')
-    session['current_date'] = datetime.strptime(current_date, "%d/%m/%Y").strftime("%Y-%m-%d")
+    session['current_date'] = datetime.strptime(current_date, "%m/%d/%Y").strftime("%Y-%m-%d")
     return jsonify({})
 
 
 @login_required(user=current_user, app=app, role=ROLES['user'])
 @views.route('/time-picker')
 def time_picker():
+    test_query = db.session.query(
+        db_tables['schedule'].start_time
+    ).all()
+    print(test_query)
     query_result = db.session.query(
         db_tables['schedule'].start_time
-    ).where(
-        db_tables['schedule'].id_doctor == session['doctor_id'] and db_tables['schedule'].sch_date == session[
-            'current_date']
+    ).filter(
+        and_(db_tables['schedule'].sch_date == date.fromisoformat(session['current_date']),
+             db_tables['schedule'].id_doctor == session['doctor_id'])
     ).all()
+    print(query_result)
     print(list(set(map(lambda x: str(x[0]), query_result))))
     return render_template(
         'time.html',
@@ -263,10 +267,10 @@ def fetch_time():
         db_tables['schedule'].sch_date,
         db_tables['schedule'].start_time,
         db_tables['schedule'].cabinet,
-    ).where(
-        db_tables['schedule'].id_doctor == session['doctor_id'] and
-        db_tables['schedule'].sch_date == session['current_date'] and
-        db_tables['schedule'].start_time == session['current_time']
+    ).filter(
+        and_(db_tables['schedule'].id_doctor == session['doctor_id'],
+             db_tables['schedule'].sch_date == date.fromisoformat(session['current_date']),
+             db_tables['schedule'].start_time == time.fromisoformat(session['current_time']))
     ).first()
     query_result = tuple(map(lambda x: str(x), query_result))
     query_result = dict(zip(reg_headings, query_result))
@@ -310,6 +314,7 @@ def get_patients_table():
         join(db_tables['patients']). \
         where(db_tables['registrations'].id_doctor == id_doctor).all()
     return to_dict(query_result, patients_registration_headings)
+
 
 @login_required(user=current_user, app=app, role='ANY')
 @views.route('/profile')

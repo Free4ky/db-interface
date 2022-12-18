@@ -5,6 +5,7 @@ from . import Login
 from flask_login import login_user, logout_user, current_user
 from src.utils import login_required, check_role
 from . import app, ROLES
+
 auth = Blueprint('auth', __name__)
 
 
@@ -88,7 +89,8 @@ def sign_up():
                     name=name,
                     surname=surname,
                     patronymic=patronymic,
-                    insurance_policy=insurance_policy
+                    insurance_policy=insurance_policy,
+                    login_id=new_login.id_login
                 )
                 db.session.add(new_patient)
                 db.session.commit()
