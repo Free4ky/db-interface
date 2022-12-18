@@ -2,8 +2,9 @@ from flask import Blueprint, render_template, request, flash, redirect, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import db_tables, db
 from . import Login
-from flask_login import login_user, login_required, logout_user, current_user
-
+from flask_login import login_user, logout_user, current_user
+from src.utils import login_required, check_role
+from . import app, ROLES
 auth = Blueprint('auth', __name__)
 
 
@@ -21,12 +22,15 @@ def login():
         email = request.form.get('email')
         password = request.form.get('password')
         user = check_existence(email)
-        print(user)
         if user:
             if check_password_hash(user.password, password):
                 flash('Logged in successfully!', category='success')
                 login_user(user, remember=True)
-                return redirect(url_for('views.home'))
+                if user.role == ROLES['user']:
+                    return redirect(url_for('views.home'))
+                elif user.role == ROLES['doctor']:
+                    return redirect(url_for('views.doctor_home'))
+
             else:
                 flash('Incorrect password!', category='error')
         else:
@@ -35,7 +39,7 @@ def login():
 
 
 @auth.route('/logout')
-@login_required
+@login_required(user=current_user, app=app, role='ANY')
 def logout():
     logout_user()
     return redirect(url_for('auth.login'))
@@ -51,6 +55,8 @@ def sign_up():
         insurance_policy = request.form.get('insurance')
         password1 = request.form.get('password1')
         password2 = request.form.get('password2')
+
+        role = check_role(email)
 
         user = check_existence(email)
         if user:
@@ -69,21 +75,23 @@ def sign_up():
             # add user
             new_login = Login(
                 email=email,
+                role=role,
                 password=generate_password_hash(
                     password1,
                     method='sha256'
                 )
             )
-            new_patient = db_tables['patients'](
-                name=name,
-                surname=surname,
-                patronymic=patronymic,
-                insurance_policy=insurance_policy
-            )
             db.session.add(new_login)
             db.session.commit()
-            db.session.add(new_patient)
-            db.session.commit()
+            if email[email.find('@') + 1:] != 'hosp.ru':
+                new_patient = db_tables['patients'](
+                    name=name,
+                    surname=surname,
+                    patronymic=patronymic,
+                    insurance_policy=insurance_policy
+                )
+                db.session.add(new_patient)
+                db.session.commit()
             # if user:
             #     login_user(user, remember=True)
             flash('Account created!', category='success')

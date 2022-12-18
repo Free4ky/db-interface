@@ -3,24 +3,27 @@ import json
 from datetime import date, time
 
 from flask import Blueprint, render_template, request, jsonify, flash
-from flask_login import login_required, current_user
-
+from flask_login import current_user
 from . import db, db_tables
 from .config import registration_headings, schedule_headings, referral_headings, medical_card_headings, \
-    doctor_names_headings, reg_headings
+    doctor_names_headings, reg_headings, patients_registration_headings
 
 from datetime import datetime
+from src.utils import login_required
+from . import app, ROLES, Login
+from flask import session
 
 views = Blueprint('views', __name__)
 
 
 @views.route('/')
-@login_required
+@login_required(user=current_user, app=app, role=ROLES['user'])
 def home():
     return render_template('home.html', user=current_user)
 
+
 @views.route('/schedule')
-@login_required
+@login_required(user=current_user, app=app, role=ROLES['user'])
 def schedule():
     return render_template('schedule.html', user=current_user, headings=schedule_headings)
 
@@ -53,41 +56,38 @@ def data():
     return to_dict(query_result, schedule_headings)
 
 
-data_dict = {}
-
-
 @views.route('/get_row', methods=['GET', 'POST'])
 def get_row():
-    global data_dict
-    data_dict = json.loads(request.data)
+    session['data_dict'] = json.loads(request.data)
     return jsonify({})
 
 
 @views.route('/confirm', methods=['GET'])
-@login_required
+@login_required(user=current_user, app=app, role=ROLES['user'])
 def confirm():
-    headings, values = data_dict.keys(), data_dict.values()
+    headings, values = session['data_dict'].keys(), session['data_dict'].values()
     headings, values = list(headings), list(values)
     print(headings, values)
     return render_template('confirm.html', user=current_user, headings=headings, data=values)
 
 
 @views.route('/add-registration', methods=['POST'])
-@login_required
+@login_required(user=current_user, app=app, role=ROLES['user'])
 def add_registration():
     data = json.loads(request.data)
     # res = db.session.query(db_tables['days'].id_day).where(data['Day'] == db_tables['days'].day).first()
     # print(f'QUEEERY {res}')
     if data.get('answer'):
         new_registration = db_tables['registrations'](
-            reg_date=data_dict['Date'],
-            reg_time=data_dict['Time'],
-            id_doctor=data_dict['Id'],
-            id_day=db.session.query(db_tables['days'].id_day).where(data_dict['Day'] == db_tables['days'].day).first()[
+            reg_date=session['data_dict']['Date'],
+            reg_time=session['data_dict']['Time'],
+            id_doctor=session['data_dict']['Id'],
+            id_day=db.session.query(db_tables['days'].id_day).where(
+                session['data_dict']['Day'] == db_tables['days'].day).first()[
                 0],
             id_patient=current_user.get_id(),
             disease_descr='',
-            cabinet=data_dict['Cabinet'],
+            cabinet=session['data_dict']['Cabinet'],
         )
         db.session.add(new_registration)
         db.session.commit()
@@ -114,7 +114,7 @@ def reg_query():
 
 
 @views.route('/registrations')
-@login_required
+@login_required(user=current_user, app=app, role=ROLES['user'])
 def registrations():
     return render_template('registrations.html', user=current_user, headings=registration_headings)
 
@@ -129,7 +129,7 @@ def delete_registration():
     return jsonify({})
 
 
-@login_required
+@login_required(user=current_user, app=app, role=ROLES['user'])
 @views.route('/referral')
 def referral():
     return render_template('referral.html', user=current_user, headings=referral_headings)
@@ -150,7 +150,7 @@ def referral_query():
     return to_dict(query_result, referral_headings)
 
 
-@login_required
+@login_required(user=current_user, app=app, role=ROLES['user'])
 @views.route('/medical-card')
 def medical_card():
     return render_template('medical_card.html', user=current_user, headings=medical_card_headings)
@@ -168,7 +168,7 @@ def medical_card_query():
     return to_dict(query_result, medical_card_headings)
 
 
-@login_required
+@login_required(user=current_user, app=app, role=ROLES['user'])
 @views.route('/specializations')
 def specializations():
     result_query = db.session.query(
@@ -178,19 +178,15 @@ def specializations():
     return render_template('specializations.html', user=current_user, specializations=result_query)
 
 
-specialization_name = None
-
-
 @views.route('/fetch-specialization', methods=['POST'])
 def fetch_specialization():
-    global specialization_name
     data = json.loads(request.data)
     print(data)
-    specialization_name = data.get('specialization_name')
+    session['specialization_name'] = data.get('specialization_name')
     return jsonify({})
 
 
-@login_required
+@login_required(user=current_user, app=app, role=ROLES['user'])
 @views.route('/doctor-names', methods=['GET', 'POST'])
 def doctor_names():
     query_result = db.session.query(
@@ -203,22 +199,18 @@ def doctor_names():
     ).select_from(db_tables['doctors']). \
         join(db_tables['specializations']). \
         join(db_tables['schedule']). \
-        where(specialization_name == db_tables['specializations'].specialization_name).all()
+        where(session['specialization_name'] == db_tables['specializations'].specialization_name).all()
     query_result = list(set(query_result))
     print([dict(zip(doctor_names_headings, x)) for x in query_result])
     return render_template("doctor_names.html", user=current_user,
                            doctors=[dict(zip(doctor_names_headings, x)) for x in query_result])
 
 
-doctor_id = None
-
-
-@login_required
+@login_required(user=current_user, app=app, role=ROLES['user'])
 @views.route('/fetch-doctors', methods=['POST'])
 def fetch_doctors():
-    global doctor_id
     data = json.loads(request.data)
-    doctor_id = data.get('id_doctor')
+    session['doctor_id'] = data.get('id_doctor')
     return jsonify({})
 
 
@@ -226,7 +218,7 @@ def fetch_doctors():
 def date_picker():
     query_result = db.session.query(
         db_tables['schedule'].sch_date
-    ).where(db_tables['schedule'].id_doctor == doctor_id).all()
+    ).where(db_tables['schedule'].id_doctor == session['doctor_id']).all()
     return render_template(
         'date.html',
         user=current_user,
@@ -234,27 +226,23 @@ def date_picker():
     )
 
 
-current_date = None
-
-
-@login_required
+@login_required(user=current_user, app=app, role=ROLES['user'])
 @views.route('/fetch-date', methods=['POST'])
 def fetch_date():
-    global current_date
     data = json.loads(request.data)
     current_date = data.get('date')
-    current_date = datetime.strptime(current_date, "%d/%m/%Y").strftime("%Y-%m-%d")
-    print(current_date)
+    session['current_date'] = datetime.strptime(current_date, "%d/%m/%Y").strftime("%Y-%m-%d")
     return jsonify({})
 
 
-@login_required
+@login_required(user=current_user, app=app, role=ROLES['user'])
 @views.route('/time-picker')
 def time_picker():
     query_result = db.session.query(
         db_tables['schedule'].start_time
     ).where(
-        db_tables['schedule'].id_doctor == doctor_id and db_tables['schedule'].sch_date == current_date
+        db_tables['schedule'].id_doctor == session['doctor_id'] and db_tables['schedule'].sch_date == session[
+            'current_date']
     ).all()
     print(list(set(map(lambda x: str(x[0]), query_result))))
     return render_template(
@@ -264,15 +252,11 @@ def time_picker():
     )
 
 
-current_time = None
-
-
-@login_required
+@login_required(user=current_user, app=app, role=ROLES['user'])
 @views.route('/fetch-time', methods=['POST'])
 def fetch_time():
-    global current_time
     data = json.loads(request.data)
-    current_time = data.get('time')
+    session['current_time'] = data.get('time')
     query_result = db.session.query(
         db_tables['schedule'].id_doctor,
         db_tables['schedule'].id_day,
@@ -280,9 +264,9 @@ def fetch_time():
         db_tables['schedule'].start_time,
         db_tables['schedule'].cabinet,
     ).where(
-        db_tables['schedule'].id_doctor == doctor_id and
-        db_tables['schedule'].sch_date == current_date and
-        db_tables['schedule'].start_time == current_time
+        db_tables['schedule'].id_doctor == session['doctor_id'] and
+        db_tables['schedule'].sch_date == session['current_date'] and
+        db_tables['schedule'].start_time == session['current_time']
     ).first()
     query_result = tuple(map(lambda x: str(x), query_result))
     query_result = dict(zip(reg_headings, query_result))
@@ -299,3 +283,74 @@ def fetch_time():
     db.session.commit()
     flash('Registration is completed!', category='success')
     return jsonify({})
+
+
+@views.route('/doctors_home')
+@login_required(user=current_user, app=app, role=ROLES['doctor'])
+def doctor_home():
+    return render_template("doctors_registrations.html", user=current_user, headings=patients_registration_headings)
+
+
+@views.route('/api/patients-table')
+def get_patients_table():
+    id_doctor = db.session.query(
+        db_tables['doctors'].id_doctor
+    ).select_from(db_tables['doctors']). \
+        join(Login). \
+        where(current_user.get_id() == Login.id_login).first()[0]
+    query_result = db.session.query(
+        db_tables['registrations'].id_registration,
+        db_tables['patients'].name,
+        db_tables['patients'].surname,
+        db_tables['patients'].patronymic,
+        db_tables['patients'].insurance_policy,
+        db_tables['registrations'].reg_date,
+        db_tables['registrations'].reg_time,
+    ).select_from(db_tables['registrations']). \
+        join(db_tables['patients']). \
+        where(db_tables['registrations'].id_doctor == id_doctor).all()
+    return to_dict(query_result, patients_registration_headings)
+
+@login_required(user=current_user, app=app, role='ANY')
+@views.route('/profile')
+def profile():
+    if current_user.get_role() == ROLES['user']:
+        query_result = db.session.query(
+            db_tables['patients'].name,
+            db_tables['patients'].surname,
+            db_tables['patients'].patronymic,
+            db_tables['patients'].insurance_policy,
+            Login.email
+        ).select_from(db_tables['patients']).join(Login).where(Login.id_login == current_user.get_id()).first()
+        headings = (
+            'Name',
+            'Surname',
+            'Patronymic',
+            'Insurance',
+            'email'
+        )
+    elif current_user.get_role() == ROLES['doctor']:
+        query_result = db.session.query(
+            db_tables['doctors'].id_doctor,
+            db_tables['doctors'].name,
+            db_tables['doctors'].surname,
+            db_tables['doctors'].patronymic,
+            db_tables['specializations'].specialization_name,
+            Login.email
+        ).select_from(db_tables['doctors']). \
+            join(Login). \
+            join(db_tables['specializations']). \
+            where(Login.id_login == current_user.get_id()).first()
+
+        headings = (
+            'Id',
+            'Name',
+            'Surname',
+            'Patronymic',
+            'Specialization',
+            'email'
+        )
+    query_result = [query_result]
+    data = to_dict(query_result, headings=headings)
+    data = data['data'][0]
+    return render_template('profile.html', user=current_user, data=data)

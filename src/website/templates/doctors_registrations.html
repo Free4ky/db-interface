@@ -1,0 +1,32 @@
+{% extends "base.html" %} {% block title %}Patients{% endblock %}
+{% block content %}
+    <table id="data" class="table table-striped">
+        <thead>
+        <tr>
+            {% for header in headings %}
+                <th>{{ header }}</th>
+            {% endfor %}
+        </tr>
+        </thead>
+    </table>
+
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        $(document).ready(function () {
+            var table = $('#data').DataTable({
+                ajax: '/api/patients-table',
+                columns: [
+                    {data: 'Id', visible: false},
+                    {data: 'Name'},
+                    {data: 'Surname'},
+                    {data: 'Patronymic'},
+                    {data: 'Insurance'},
+                    {data: 'Date'},
+                    {data: 'Time'}
+                ],
+            });
+        });
+    </script>
+{% endblock %}

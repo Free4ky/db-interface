@@ -10,12 +10,20 @@ app = Flask(__name__)
 with app.app_context():
     Base = automap_base()
 
+ROLES = {
+    'user': 0,
+    'doctor': 1
+}
+
 
 class Login(Base, UserMixin):
     __tablename__ = 'login'
 
     def get_id(self):
         return self.id_login
+
+    def get_role(self):
+        return self.role
 
 
 def instantiate_tables():

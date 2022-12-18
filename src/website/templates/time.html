@@ -25,7 +25,6 @@
 {% block scripts %}
     <script>
         $('#time-table').on('click', 'button', function () {
-            console.log(this.innerText);
 
             fetch("/fetch-time", {
                 method: "POST",

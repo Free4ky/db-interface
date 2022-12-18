@@ -72,3 +72,13 @@ reg_headings = (
     'time',
     'cabinet'
 )
+
+patients_registration_headings = (
+    'Id',
+    'Name',
+    'Surname',
+    'Patronymic',
+    'Insurance',
+    'Date',
+    'Time'
+)

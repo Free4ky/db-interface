@@ -1,0 +1,9 @@
+.doctor-info{
+    display: flex;
+    align-items: center;
+    background-color: dodgerblue;
+    width: 90%;
+    height: 10vh;
+    margin: 0 auto;
+    border-radius: 10px;
+}

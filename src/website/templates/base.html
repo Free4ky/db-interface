@@ -43,12 +43,17 @@
     </button>
     <div class="collapse navbar-collapse" id="navbar">
         <div class="navbar-nav">
-            {% if user.is_authenticated %}
+            {% if user.is_authenticated and user.role == 0%}
                 <a class="nav-item nav-link" id="home" href="/">Home</a>
-                <a class="nav-item nav-link" id="home" href="/schedule">Schedule</a>
+                <a class="nav-item nav-link" id="schedule" href="/schedule">Schedule</a>
                 <a class="nav-item nav-link" id="registrations" href="/registrations">Registrations</a>
-                <a class="nav-item nav-link" id="registrations" href="/referral">Referral</a>
-                <a class="nav-item nav-link" id="registrations" href="/medical-card">Medical card</a>
+                <a class="nav-item nav-link" id="referral" href="/referral">Referral</a>
+                <a class="nav-item nav-link" id="medical-card" href="/medical-card">Medical card</a>
+                <a class="nav-item nav-link" id="profile" href="/profile">Profile</a>
+                <a class="nav-item nav-link" id="logout" href="/logout">Logout</a>
+            {% elif user.is_authenticated and user.role == 1%}
+                <a class="nav-item nav-link" id="doctors_home" href="/doctors_home">Home</a>
+                <a class="nav-item nav-link" id="profile" href="/profile">Profile</a>
                 <a class="nav-item nav-link" id="logout" href="/logout">Logout</a>
             {% else %}
                 <a class="nav-item nav-link" id="login" href="/login">Login</a>
