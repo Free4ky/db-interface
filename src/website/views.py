@@ -66,7 +66,6 @@ def get_row():
 def confirm():
     headings, values = session['data_dict'].keys(), session['data_dict'].values()
     headings, values = list(headings), list(values)
-    print(headings, values)
     return render_template('confirm.html', user=current_user, headings=headings, data=values)
 
 
@@ -76,6 +75,9 @@ def add_registration():
     data = json.loads(request.data)
     # res = db.session.query(db_tables['days'].id_day).where(data['Day'] == db_tables['days'].day).first()
     # print(f'QUEEERY {res}')
+    patient_id = db.session.query(
+        db_tables['patients'].id_patient
+    ).select_from(db_tables['patients']).join(Login).filter(Login.id_login == current_user.get_id()).first()[0]
     if data.get('answer'):
         new_registration = db_tables['registrations'](
             reg_date=session['data_dict']['Date'],
@@ -83,10 +85,11 @@ def add_registration():
             id_doctor=session['data_dict']['Id'],
             id_day=db.session.query(db_tables['days'].id_day).where(
                 session['data_dict']['Day'] == db_tables['days'].day).first()[0],
-            id_patient=current_user.get_id(),
+            id_patient=patient_id,
             disease_descr='',
             cabinet=session['data_dict']['Cabinet'],
         )
+
         db.session.add(new_registration)
         db.session.commit()
         flash('Registration is completed!', category='success')
@@ -97,6 +100,9 @@ def add_registration():
 
 @views.route('/api/reg-query')
 def reg_query():
+    patient_id = db.session.query(
+        db_tables['patients'].id_patient
+    ).select_from(db_tables['patients']).join(Login).filter(Login.id_login == current_user.get_id()).first()[0]
     query_result = db.session.query(
         db_tables['registrations'].id_registration,
         db_tables['doctors'].name,
@@ -107,7 +113,7 @@ def reg_query():
         db_tables['registrations'].reg_time
     ).select_from(db_tables['registrations']). \
         join(db_tables['doctors']). \
-        join(db_tables['specializations']).where(current_user.get_id() == db_tables['registrations'].id_patient).all()
+        join(db_tables['specializations']).where(patient_id == db_tables['registrations'].id_patient).all()
     return to_dict(query_result, registration_headings)
 
 
@@ -274,12 +280,15 @@ def fetch_time():
     ).first()
     query_result = tuple(map(lambda x: str(x), query_result))
     query_result = dict(zip(reg_headings, query_result))
+    patient_id = db.session.query(
+        db_tables['patients'].id_patient
+    ).select_from(db_tables['patients']).join(Login).filter(Login.id_login == current_user.get_id()).first()[0]
     new_registration = db_tables['registrations'](
         reg_date=query_result['date'],
         reg_time=query_result['time'],
         id_doctor=query_result['id_doctor'],
         id_day=query_result['id_day'],
-        id_patient=current_user.get_id(),
+        id_patient=patient_id,
         disease_descr='',
         cabinet=query_result['cabinet']
     )
