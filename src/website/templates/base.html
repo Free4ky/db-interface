@@ -44,20 +44,20 @@
     <div class="collapse navbar-collapse" id="navbar">
         <div class="navbar-nav">
             {% if user.is_authenticated and user.role == 0%}
-                <a class="nav-item nav-link" id="home" href="/">Home</a>
-                <a class="nav-item nav-link" id="schedule" href="/schedule">Schedule</a>
-                <a class="nav-item nav-link" id="registrations" href="/registrations">Registrations</a>
-                <a class="nav-item nav-link" id="referral" href="/referral">Referral</a>
-                <a class="nav-item nav-link" id="medical-card" href="/medical-card">Medical card</a>
-                <a class="nav-item nav-link" id="profile" href="/profile">Profile</a>
-                <a class="nav-item nav-link" id="logout" href="/logout">Logout</a>
+                <a class="nav-item nav-link" id="home" href="/">Домашняя</a>
+                <a class="nav-item nav-link" id="schedule" href="/schedule">Расписание</a>
+                <a class="nav-item nav-link" id="registrations" href="/registrations">Регистрации</a>
+                <a class="nav-item nav-link" id="referral" href="/referral">Направления</a>
+                <a class="nav-item nav-link" id="medical-card" href="/medical-card">Мед. карта</a>
+                <a class="nav-item nav-link" id="profile" href="/profile">Профиль</a>
+                <a class="nav-item nav-link" id="logout" href="/logout">Выйти</a>
             {% elif user.is_authenticated and user.role == 1%}
-                <a class="nav-item nav-link" id="doctors_home" href="/doctors_home">Home</a>
-                <a class="nav-item nav-link" id="profile" href="/profile">Profile</a>
-                <a class="nav-item nav-link" id="logout" href="/logout">Logout</a>
+                <a class="nav-item nav-link" id="doctors_home" href="/doctors_home">Домашняя</a>
+                <a class="nav-item nav-link" id="profile" href="/profile">Профиль</a>
+                <a class="nav-item nav-link" id="logout" href="/logout">Выйти</a>
             {% else %}
-                <a class="nav-item nav-link" id="login" href="/login">Login</a>
-                <a class="nav-item nav-link" id="signUp" href="/sign-up">Sign Up</a>
+                <a class="nav-item nav-link" id="login" href="/login">Войти</a>
+                <a class="nav-item nav-link" id="signUp" href="/sign-up">Зарегистрироваться</a>
             {% endif %}
         </div>
     </div>

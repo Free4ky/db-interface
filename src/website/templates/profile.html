@@ -17,7 +17,7 @@
                                 {% if user.role == 1 %}
                                     <p class="text-secondary mb-1">{{ data['Specialization'] }}</p>
                                 {% endif %}
-                                <p class="text-muted font-size-sm">Hospital №1</p>
+                                <p class="text-muted font-size-sm">Поликлиника №1</p>
                             </div>
                         </div>
                     </div>
@@ -40,7 +40,7 @@
 
                         <div class="row">
                             <div class="col-sm-3">
-                                <h6 class="mb-0">Full name</h6>
+                                <h6 class="mb-0">ФИО</h6>
                             </div>
                             <div class="col-sm-9 text-secondary">
                                 {{ data['Surname'] }} {{ data['Name'] }} {{ data['Patronymic'] }}
@@ -50,7 +50,7 @@
                         {% if user.role == 1 %}
                             <div class="row">
                                 <div class="col-sm-3">
-                                    <h6 class="mb-0">Specialization</h6>
+                                    <h6 class="mb-0">Специализация</h6>
                                 </div>
                                 <div class="col-sm-9 text-secondary">
                                     {{ data['Specialization'] }}
@@ -59,7 +59,7 @@
                         {% elif user.role == 0 %}
                             <div class="row">
                                 <div class="col-sm-3">
-                                    <h6 class="mb-0">Insurance</h6>
+                                    <h6 class="mb-0">Полис страхования</h6>
                                 </div>
                                 <div class="col-sm-9 text-secondary">
                                     {{ data['Insurance'] }}
@@ -69,7 +69,7 @@
                         <hr>
                         <div class="row">
                             <div class="col-sm-3">
-                                <h6 class="mb-0">Email</h6>
+                                <h6 class="mb-0">Почта</h6>
                             </div>
                             <div class="col-sm-9 text-secondary">
                                 {{ data['email'] }}

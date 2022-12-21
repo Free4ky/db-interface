@@ -7,7 +7,7 @@
             {% for header in headings %}
                 <th>{{ header }}</th>
             {% endfor %}
-            <th>Cancel</th>
+            <th>Отменить запись</th>
         </tr>
         </thead>
     </table>
@@ -19,12 +19,12 @@
                 ajax: '/api/reg-query',
                 columns: [
                     {data: 'Id', visible:false},
-                    {data: 'Name'},
-                    {data: 'Surname'},
-                    {data: 'Patronymic'},
-                    {data: 'Specialization'},
-                    {data: 'Date'},
-                    {data: 'Time'},
+                    {data: 'Имя'},
+                    {data: 'Фамилия'},
+                    {data: 'Отчество'},
+                    {data: 'Специализация'},
+                    {data: 'Дата'},
+                    {data: 'Время'},
                     {defaultContent: '<button class="btn btn-danger">&times;</button>', orderable:false, searchable:false, },
                 ],
             });

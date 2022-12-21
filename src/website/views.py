@@ -11,7 +11,7 @@ from .config import registration_headings, schedule_headings, referral_headings,
 from src.utils import login_required
 from . import app, ROLES, Login
 from flask import session
-
+from collections import  OrderedDict
 views = Blueprint('views', __name__)
 
 
@@ -64,7 +64,8 @@ def get_row():
 @views.route('/confirm', methods=['GET'])
 @login_required(user=current_user, app=app, role=ROLES['user'])
 def confirm():
-    headings, values = session['data_dict'].keys(), session['data_dict'].values()
+    ordered = OrderedDict((k, session['data_dict'][k]) for k in registration_headings)
+    headings, values = ordered.keys(), ordered.values()
     headings, values = list(headings), list(values)
     return render_template('confirm.html', user=current_user, headings=headings, data=values)
 

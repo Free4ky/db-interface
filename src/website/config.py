@@ -19,41 +19,41 @@ schedule_join = [
 
 registration_headings = (
     'Id',
-    'Name',
-    'Surname',
-    'Patronymic',
-    'Specialization',
-    'Date',
-    'Time'
+    'Имя',
+    'Фамилия',
+    'Отчество',
+    'Специализация',
+    'Дата',
+    'Время'
 )
 
 schedule_headings = (
     'Id',
-    'Name',
-    'Surname',
-    'Patronymic',
-    'Specialization',
-    'Day',
-    'Date',
-    'Time',
-    'Cabinet'
+    'Имя',
+    'Фамилия',
+    'Отчество',
+    'Специализация',
+    'День',
+    'Дата',
+    'Время',
+    'Кабинет'
 )
 
 referral_headings = (
     'Id',
-    'Referral name',
-    'Start time',
-    'End time',
-    'Name',
-    'Surname',
-    'Patronymic',
+    'Название',
+    'Дата начала',
+    'Дата окончания',
+    'Имя',
+    'Фамилия',
+    'Отчество',
 )
 
 medical_card_headings = (
     'Id',
-    'Name',
-    'Date',
-    'Description'
+    'Название',
+    'Дата',
+    'Описание'
 )
 
 doctor_names_headings = (
@@ -75,10 +75,10 @@ reg_headings = (
 
 patients_registration_headings = (
     'Id',
-    'Name',
-    'Surname',
-    'Patronymic',
-    'Insurance',
-    'Date',
-    'Time'
+    'Имя',
+    'Фамилия',
+    'Отчество',
+    'Полис страхования',
+    'Дата',
+    'Время'
 )
