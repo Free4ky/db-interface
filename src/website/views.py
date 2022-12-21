@@ -81,21 +81,21 @@ def add_registration():
     ).select_from(db_tables['patients']).join(Login).filter(Login.id_login == current_user.get_id()).first()[0]
     if data.get('answer'):
         new_registration = db_tables['registrations'](
-            reg_date=session['data_dict']['Date'],
-            reg_time=session['data_dict']['Time'],
+            reg_date=session['data_dict']['Дата'],
+            reg_time=session['data_dict']['Время'],
             id_doctor=session['data_dict']['Id'],
             id_day=db.session.query(db_tables['days'].id_day).where(
-                session['data_dict']['Day'] == db_tables['days'].day).first()[0],
+                session['data_dict']['День'] == db_tables['days'].day).first()[0],
             id_patient=patient_id,
             disease_descr='',
-            cabinet=session['data_dict']['Cabinet'],
+            cabinet=session['data_dict']['Кабинет'],
         )
 
         db.session.add(new_registration)
         db.session.commit()
-        flash('Registration is completed!', category='success')
+        flash('Регистрация завершена!', category='success')
     else:
-        flash('Registration canceled!', category='error')
+        flash('Регистрация отменена!', category='error')
     return jsonify({})
 
 
@@ -295,7 +295,7 @@ def fetch_time():
     )
     db.session.add(new_registration)
     db.session.commit()
-    flash('Registration is completed!', category='success')
+    flash('Регистрация завершена!', category='success')
     return jsonify({})
 
 

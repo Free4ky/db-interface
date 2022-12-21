@@ -25,17 +25,16 @@ def login():
         user = check_existence(email)
         if user:
             if check_password_hash(user.password, password):
-                flash('Logged in successfully!', category='success')
+                flash('Вход произведен!', category='success')
                 login_user(user, remember=True)
                 if user.role == ROLES['user']:
                     return redirect(url_for('views.home'))
                 elif user.role == ROLES['doctor']:
                     return redirect(url_for('views.doctor_home'))
-
             else:
-                flash('Incorrect password!', category='error')
+                flash('Неверный пароль!', category='error')
         else:
-            flash('Account does not exists!', category='error')
+            flash('Учетная запись не существует!', category='error')
     return render_template('login.html', user=current_user)
 
 
@@ -61,17 +60,17 @@ def sign_up():
 
         user = check_existence(email)
         if user:
-            flash('Account already exists!', category='error')
+            flash('Учетная запись уже существует!', category='error')
         elif len(email) < 4:
-            flash('Email must be greater than 4 characters', category='error')
+            flash('Почта должна быть длиннее четырех символов', category='error')
         elif len(name) < 2:
-            flash('Email must be greater than 4 characters', category='error')
+            flash('Имя должно быть длиннее одного символа', category='error')
         elif password1 != password2:
-            flash('Passwords don\'t match', category='error')
+            flash('Пароли не совпадают', category='error')
         elif len(password1) < 7:
-            flash('Password must be at least 7 characters', category='error')
+            flash('Пароль должен содержать более 7 символов', category='error')
         elif len(insurance_policy) != 16:
-            flash('Insurance policy error!', category='error')
+            flash('Ошибка в полисе страхования!', category='error')
         else:
             # add user
             new_login = Login(
@@ -96,6 +95,6 @@ def sign_up():
                 db.session.commit()
             # if user:
             #     login_user(user, remember=True)
-            flash('Account created!', category='success')
+            flash('Учетная запись создана!', category='success')
             return redirect(url_for('views.home'))
     return render_template('sign_up.html', user=current_user)
